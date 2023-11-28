@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./style.scss">
+    <title>Status</title>
+    <script>
+        function updateClock() {
+            var currentTime = new Date();
+            var hours = currentTime.getHours();
+            var minutes = currentTime.getMinutes();
+            var seconds = currentTime.getSeconds();
+
+            // Thêm số 0 đằng trước nếu số giờ/phút/giây nhỏ hơn 10
+            hours = (hours < 10) ? '0' + hours : hours;
+            minutes = (minutes < 10) ? '0' + minutes : minutes;
+            seconds = (seconds < 10) ? '0' + seconds : seconds;
+
+            var timeString = hours + ':' + minutes + ':' + seconds;
+            document.getElementById('realTime').innerHTML = timeString;
+        }
+
+        // Cập nhật thời gian mỗi giây
+        setInterval(updateClock, 1000);
+
+        // Gọi hàm để cập nhật thời gian ban đầu   
+        
+        setInterval(async ()=> {
+            // curl len server lay trang thai moi
+            const res = await fetch('/content');
+            const d = await res.json();
+            const c = document.querySelector('#content');
+            for (const item of d.status) {
+                let el = c.querySelector('#server-' + item.name);
+                if (!el) {
+                    el = document.createElement('div');
+                    el.id = 'server-' + item.name;
+                    el.ip = 'ip-' + item.ip;
+                    c.appendChild(el);
+                }
+                el.innerHTML = `<h1>${item.name} ${item.ip} => ${item.status}</h1><span>Updated: ${item.updated_at}</span>`;
+                switch(item.status) {
+                    case 'OK':
+                        el.style.background = 'green';
+                        break;
+                    case 'ERROR':
+                        el.style.background = 'red';
+                        break;
+                    case 'TIMEOUT':
+                        el.style.background = 'gray';
+                        break;
+                }
+            }
+        },1000);
+    </script>
+</head>
+<body>
+    <dashboard>
+        <h1>Information
+            <p>Real-Time Clock</p>
+            <p id="realTime"></p>
+            <main id="content">
+        </h1>
+    </dashboard>
+</body>
+</html>
